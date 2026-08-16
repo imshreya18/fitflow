@@ -130,3 +130,27 @@ class WorkoutPlanResponse(BaseModel):
     plan_summary: str
 
     week: List[WorkoutDay]
+
+
+    # =========================
+# AI RECOMMENDATION SCHEMAS
+# =========================
+
+class RecommendationItem(BaseModel):
+    category: Literal[
+        "workout",
+        "exercise",
+        "recovery",
+        "nutrition",
+        "progress"
+    ]
+
+    title: str
+    recommendation: str
+    reason: str
+    priority: Literal["high", "medium", "low"]
+
+
+class RecommendationResponse(BaseModel):
+    recommendations: List[RecommendationItem]
+    summary: str
