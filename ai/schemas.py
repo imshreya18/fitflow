@@ -154,3 +154,23 @@ class RecommendationItem(BaseModel):
 class RecommendationResponse(BaseModel):
     recommendations: List[RecommendationItem]
     summary: str
+
+
+# =========================
+# AI COACH SCHEMAS
+# =========================
+
+class CoachAction(BaseModel):
+    action_type: Literal[
+        "apply_workout",
+        "modify_workout",
+        "view_recommendations",
+        "none",
+    ]
+
+    label: str
+
+
+class CoachResponse(BaseModel):
+    message: str
+    action: CoachAction
