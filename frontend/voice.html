@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitFlow Voice Input</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 60px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #status {
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        #transcription {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            min-height: 40px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🎙️ FitFlow Voice Input</h1>
+
+    <p>Speak your fitness request.</p>
+
+    <button id="startBtn">🎤 Start Recording</button>
+    <button id="stopBtn" disabled>⏹ Stop Recording</button>
+
+    <div id="status">Ready</div>
+
+    <div id="transcription">
+        <strong>Transcription:</strong>
+        <p id="text">Nothing recorded yet.</p>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const status = document.getElementById("status");
+        const text = document.getElementById("text");
+
+        startBtn.addEventListener("click", async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+                audioChunks = [];
+
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                });
+
+                mediaRecorder.addEventListener("stop", async () => {
+
+                    status.textContent = "Uploading audio...";
+
+                    const audioBlob = new Blob(audioChunks, {
+                        type: mediaRecorder.mimeType
+                    });
+
+                    const formData = new FormData();
+
+                    formData.append(
+                        "file",
+                        audioBlob,
+                        "voice_input.webm"
+                    );
+
+                    try {
+                        const response = await fetch(
+                            "/voice/transcribe",
+                            {
+                                method: "POST",
+                                body: formData
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error(
+                                `Server returned ${response.status}`
+                            );
+                        }
+
+                        const result = await response.json();
+
+                        text.textContent = result.text;
+                        status.textContent = "Transcription complete ✅";
+
+                    } catch (error) {
+                        console.error(error);
+                        status.textContent =
+                            "Error sending audio ❌";
+                    }
+                });
+
+                mediaRecorder.start();
+
+                status.textContent = "🔴 Recording...";
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+
+            } catch (error) {
+                console.error(error);
+
+                status.textContent =
+                    "Microphone permission denied or unavailable ❌";
+            }
+        });
+
+        stopBtn.addEventListener("click", () => {
+
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+
+            mediaRecorder.stream.getTracks().forEach(track => {
+                track.stop();
+            });
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+
+            status.textContent = "Processing...";
+        });
+    </script>
+
+</body>
+</html>

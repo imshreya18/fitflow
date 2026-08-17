@@ -42,3 +42,6 @@ dist/
 secrets/
 *.pem
 *.key
+# Voice test recordings
+voice/*.mp3
+voice/*.wav

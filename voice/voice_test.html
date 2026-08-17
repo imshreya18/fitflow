@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitFlow Voice Input Test</title>
+</head>
+
+<body>
+
+    <h1>🎙️ FitFlow Voice Input</h1>
+
+    <button id="startBtn">Start Speaking</button>
+    <button id="stopBtn">Stop</button>
+
+    <p><strong>Transcript:</strong></p>
+    <p id="transcript">Your speech will appear here...</p>
+
+    <p id="status"></p>
+
+    <script>
+
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const transcript = document.getElementById("transcript");
+        const status = document.getElementById("status");
+
+        // Check browser support
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+
+            status.textContent =
+                "Speech recognition is not supported in this browser.";
+
+        } else {
+
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = function () {
+                status.textContent = "🎙️ Listening...";
+            };
+
+            recognition.onresult = function (event) {
+
+                let text = "";
+
+                for (let i = event.resultIndex;
+                     i < event.results.length;
+                     i++) {
+
+                    text += event.results[i][0].transcript;
+                }
+
+                transcript.textContent = text;
+            };
+
+            recognition.onerror = function (event) {
+
+                status.textContent =
+                    "Error: " + event.error;
+            };
+
+            recognition.onend = function () {
+
+                status.textContent = "✅ Finished listening.";
+            };
+
+            startBtn.onclick = function () {
+
+                recognition.start();
+            };
+
+            stopBtn.onclick = function () {
+
+                recognition.stop();
+            };
+        }
+
+    </script>
+
+</body>
+</html>
