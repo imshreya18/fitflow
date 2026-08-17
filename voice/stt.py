@@ -1,3 +1,5 @@
+# ACTUAL STT IMPLEMENTATION
+
 from faster_whisper import WhisperModel
 
 

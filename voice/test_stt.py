@@ -1,3 +1,5 @@
+# DEVELOPMENT TEST 
+
 from faster_whisper import WhisperModel
 
 AUDIO_FILE = "voice/voice_test3.mp3"
